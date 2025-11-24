@@ -16,7 +16,6 @@ function checkSavedLogin() {
         // Hiển thị thông tin user
         document.getElementById("currentUserEmail").textContent = currentUser.email;
         document.getElementById("currentUserRole").textContent = currentUser.role.toUpperCase();
-        document.getElementById("currentUserRole").style.background = currentUser.role === "admin" ? "#667eea" : "#48bb78";
 
         return true;
     }
@@ -483,7 +482,6 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
         document.getElementById("currentUserEmail").textContent = currentUser.email;
         document.getElementById("currentUserRole").textContent = currentUser.role.toUpperCase();
-        document.getElementById("currentUserRole").style.background = currentUser.role === "admin" ? "#248dab" : "#f7a219";
 
         document.getElementById("loginScreen").style.display = "none";
         document.getElementById("dashboardScreen").classList.add("active");
