@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Gigan Management Dashboard</title>
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+            @view-transition {
+                navigation: auto;
+            }
+        </style>
+        <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+        <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+        <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+        <script src="config.js"></script>
+    </head>
+    <body>
+        <!-- Login Screen -->
+        <div id="loginScreen" class="login-screen">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="logo"><img src="img/gigan.png" alt="" /></div>
+                </div>
+                <form id="loginForm" class="login-form">
+                    <div class="form-group"><label for="email" class="form-label">Email</label> <input type="email" id="email" class="form-input" placeholder="" required /></div>
+                    <div class="form-group"><label for="password" class="form-label">Mật khẩu</label> <input type="password" id="password" class="form-input" placeholder="" required /></div>
+                    <button type="submit" class="login-button">Đăng nhập</button>
+                </form>
+            </div>
+        </div>
+        <!-- Dashboard Screen -->
+        <div id="dashboardScreen" class="dashboard-screen">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo"><img src="img/gigan.png" alt=""></div>
+                    <span class="company-name">GIGAN JSC</span>
+                </div>
+                <nav class="sidebar-menu">
+                    <div class="menu-item active" data-section="dashboard"><span class="menu-icon">📊</span> <span class="menu-text">Dashboard</span></div>
+                    <div class="menu-item" data-section="users"><span class="menu-icon">👥</span> <span class="menu-text">Quản lý User</span></div>
+                    <div class="menu-item" data-section="reports"><span class="menu-icon">📄</span> <span class="menu-text">Quản lý Report</span></div>
+                    <div class="menu-item" data-section="settings"><span class="menu-icon">⚙️</span> <span class="menu-text">Cài đặt</span></div>
+                </nav>
+                <div class="sidebar-footer">
+                    <div class="user-info">
+                        <div class="user-avatar"><img src="img/person.png" alt=""></div>
+                        <div class="user-details">
+                            <div class="user-name" id="currentUserEmail">admin@gigan.vn</div>
+                            <div class="user-role" id="currentUserRole">ADMIN</div>
+                        </div>
+                    </div>
+                    <button class="logout-button" id="logoutButton">Đăng xuất</button>
+                </div>
+            </aside>
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Dashboard Section -->
+                <section class="content-section active" id="dashboardSection">
+                    <h2 class="content-title">Dashboard</h2>
+                    <p class="content-subtitle">Tổng quan hệ thống</p>
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card" style="background-color:#f7a219;">
+                            <div class="stat-icon" >👥</div>
+                            <div class="stat-info">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Tổng Users</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="background-color:#248dab;">
+                            <div class="stat-icon" >📄</div>
+                            <div class="stat-info">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Reports Tháng này</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="background-color:rgb(0, 174, 255);">
+                            <div class="stat-icon" >✅</div>
+                            <div class="stat-info">
+                                <div class="stat-value">0%</div>
+                                <div class="stat-label">Hoàn thành</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="background-color:rgb(0, 255, 51);">
+                            <div class="stat-icon" >⏳</div>
+                            <div class="stat-info">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Đang xử lý</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Charts -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>Báo cáo theo tháng</h3>
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Phân loại báo cáo</h3>
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Recent Reports -->
+                    <div class="table-card">
+                        <h3>Báo cáo gần đây</h3>
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên báo cáo</th>
+                                        <th>Người tạo</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 40px">Đang tải dữ liệu...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <!-- Users Section -->
+                <section class="content-section" id="usersSection">
+                    <div class="content-header">
+                        <div>
+                            <h2 class="content-title">Quản lý User</h2>
+                            <p class="content-subtitle">Quản lý người dùng trong hệ thống</p>
+                        </div>
+                        <button class="add-button" id="addUserBtn" onclick="showAddUserModal()" style="display: none">➕ Thêm User Mới</button>
+                    </div>
+                    <div id="usersTable" class="table-card">
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Email</th>
+                                        <th>Họ tên</th>
+                                        <th>Phân quyền</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; padding: 40px">Đang tải dữ liệu...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="usersNoAccess" class="no-access" style="display: none">
+                        <div class="no-access-icon">🔒</div>
+                        <h3>Không có quyền truy cập</h3>
+                        <p>Bạn cần quyền Admin để quản lý Users</p>
+                    </div>
+                </section>
+                <!-- Reports Section -->
+                <section class="content-section" id="reportsSection">
+                    <div class="content-header">
+                        <div>
+                            <h2 class="content-title">Quản lý Report</h2>
+                            <p class="content-subtitle">Quản lý và theo dõi các báo cáo</p>
+                        </div>
+                        <button class="add-button" onclick="showAddReportModal()">➕ Thêm Report Mới</button>
+                    </div>
+                    <div class="table-card">
+                        <div class="data-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên báo cáo</th>
+                                        <th>Loại</th>
+                                        <th>Người tạo</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; padding: 40px">Đang tải dữ liệu...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <!-- Settings Section -->
+                <section class="content-section" id="settingsSection">
+                    <h2 class="content-title">Cài đặt</h2>
+                    <p class="content-subtitle">Cấu hình hệ thống</p>
+                    <div class="settings-card">
+                        <h3>Cài đặt chung</h3>
+                        <div class="settings-item">
+                            <div class="settings-label">
+                                <strong>Ngôn ngữ</strong>
+                                <p>Chọn ngôn ngữ hiển thị</p>
+                            </div>
+                            <select class="form-input" style="width: 200px">
+                                <option>Tiếng Việt</option>
+                                <option>English</option>
+                            </select>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-label">
+                                <strong>Múi giờ</strong>
+                                <p>Múi giờ hiển thị dữ liệu</p>
+                            </div>
+                            <select class="form-input" style="width: 200px">
+                                <option>GMT+7 (Việt Nam)</option>
+                                <option>GMT+0 (UTC)</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        <!-- User Modal -->
+        <div id="userModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalTitle">Chỉnh sửa User</h3>
+                    <span class="modal-close" onclick="closeUserModal()">×</span>
+                </div>
+                <form id="userForm" onsubmit="saveUser(event)">
+                    <div class="form-group"><label class="form-label" for="userId">ID</label> <input type="text" id="userId" class="form-input" readonly /></div>
+                    <div class="form-group"><label class="form-label" for="userEmail">Email</label> <input type="email" id="userEmail" class="form-input" required /></div>
+                    <div class="form-group"><label class="form-label" for="userName">Họ tên</label> <input type="text" id="userName" class="form-input" required /></div>
+                    <div class="form-group">
+                        <label class="form-label" for="userRole">Phân quyền</label>
+                        <select id="userRole" class="form-input" required>
+                            <option value="Admin">Admin</option>
+                            <option value="User">User</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="userStatus">Trạng thái</label>
+                        <select id="userStatus" class="form-input" required>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="modal-button cancel" onclick="closeUserModal()">Hủy</button> <button type="submit" class="modal-button save">💾 Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Report Modal -->
+        <div id="reportModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="reportModalTitle">Chỉnh sửa Report</h3>
+                    <span class="modal-close" onclick="closeReportModal()">×</span>
+                </div>
+                <form id="reportForm" onsubmit="saveReport(event)">
+                    <div class="form-group"><label class="form-label" for="reportId">ID</label> <input type="text" id="reportId" class="form-input" readonly /></div>
+                    <div class="form-group"><label class="form-label" for="reportName">Tên Report</label> <input type="text" id="reportName" class="form-input" required /></div>
+                    <div class="form-group">
+                        <label class="form-label" for="reportType">Loại</label> <input type="text" id="reportType" class="form-input" required placeholder="Tài chính, Marketing, Nhân sự..." />
+                    </div>
+                    <div class="form-group"><label class="form-label" for="reportCreator">Người tạo</label> <input type="text" id="reportCreator" class="form-input" required /></div>
+                    <div class="form-group"><label class="form-label" for="reportDate">Ngày tạo</label> <input type="text" id="reportDate" class="form-input" required placeholder="DD/MM/YYYY" /></div>
+                    <div class="form-group">
+                        <label class="form-label" for="reportStatus">Trạng thái</label>
+                        <select id="reportStatus" class="form-input" required>
+                            <option value="Processing">Processing</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="modal-button cancel" onclick="closeReportModal()">Hủy</button> <button type="submit" class="modal-button save">💾 Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="spinner"></div>
+            <p>Đang xử lý...</p>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
