@@ -16,7 +16,6 @@ function checkSavedLogin() {
         // Hiển thị thông tin user
         document.getElementById("currentUserEmail").textContent = currentUser.email;
         document.getElementById("currentUserRole").textContent = currentUser.role.toUpperCase();
-
         return true;
     }
     return false;
@@ -158,28 +157,32 @@ function renderUsersTable() {
     }
 }
 
-// Render Reports Table
+// Render Reports Table - CÓ PHÂN QUYỀN
 function renderReportsTable() {
     const reportsTable = document.querySelector("#reportsSection .data-table tbody");
 
     if (reportsTable && reportsData.length > 0) {
         reportsTable.innerHTML = reportsData
-            .map(
-                (report) => `
-      <tr>
-        <td>#${report.ID}</td>
-        <td>${report.Name}</td>
-        <td>${report.Type}</td>
-        <td>${report.Creator}</td>
-        <td>${report.Date}</td>
-        <td><span class="badge ${report.Status.toLowerCase() === "completed" ? "badge-active" : "badge-processing"}">${translateStatus(report.Status)}</span></td>
-        <td>
-          <button class="action-button edit" onclick="showEditReportModal('${report.ID}')">✏️ Sửa</button>
-          <button class="action-button delete" onclick="deleteReport('${report.ID}')">🗑️ Xóa</button>
-        </td>
-      </tr>
-    `
-            )
+            .map((report) => {
+                // CHỈ ADMIN MỚI CÓ NÚT SỬA/XÓA
+                const actionButtons =
+                    currentUser && currentUser.role === "admin"
+                        ? `<button class="action-button edit" onclick="showEditReportModal('${report.ID}')">✏️ Sửa</button>
+           <button class="action-button delete" onclick="deleteReport('${report.ID}')">🗑️ Xóa</button>`
+                        : `<span style="color: #a0aec0; font-size: 13px; font-style: italic;">Chỉ xem</span>`;
+
+                return `
+        <tr>
+          <td>#${report.ID}</td>
+          <td>${report.Name}</td>
+          <td>${report.Type}</td>
+          <td>${report.Creator}</td>
+          <td>${report.Date}</td>
+          <td><span class="badge ${report.Status.toLowerCase() === "completed" ? "badge-active" : "badge-processing"}">${translateStatus(report.Status)}</span></td>
+          <td>${actionButtons}</td>
+        </tr>
+      `;
+            })
             .join("");
     }
 }
@@ -188,6 +191,12 @@ function renderReportsTable() {
 
 // Hiển thị modal sửa User
 function showEditUserModal(id) {
+    // Kiểm tra quyền
+    if (currentUser.role !== "admin") {
+        showNotification("Bạn không có quyền thực hiện thao tác này!", "error");
+        return;
+    }
+
     const user = usersData.find((u) => u.ID === id);
     if (!user) return;
 
@@ -204,6 +213,12 @@ function showEditUserModal(id) {
 
 // Hiển thị modal thêm User
 function showAddUserModal() {
+    // Kiểm tra quyền
+    if (currentUser.role !== "admin") {
+        showNotification("Bạn không có quyền thực hiện thao tác này!", "error");
+        return;
+    }
+
     const modal = document.getElementById("userModal");
     document.getElementById("modalTitle").textContent = "Thêm User Mới";
     document.getElementById("userForm").reset();
@@ -224,6 +239,12 @@ function closeUserModal() {
 // Lưu User (Thêm hoặc Sửa)
 async function saveUser(event) {
     event.preventDefault();
+
+    // Kiểm tra quyền
+    if (currentUser.role !== "admin") {
+        showNotification("Bạn không có quyền thực hiện thao tác này!", "error");
+        return;
+    }
 
     const userData = {
         ID: document.getElementById("userId").value,
@@ -271,6 +292,12 @@ async function saveUser(event) {
 
 // Xóa User
 async function deleteUser(id) {
+    // Kiểm tra quyền
+    if (currentUser.role !== "admin") {
+        showNotification("Bạn không có quyền thực hiện thao tác này!", "error");
+        return;
+    }
+
     const user = usersData.find((u) => u.ID === id);
     if (!user) return;
 
@@ -318,10 +345,16 @@ function cancelDelete(btn, originalHTML) {
     btn.parentElement.innerHTML = originalHTML;
 }
 
-// ==================== REPORT CRUD ====================
+// ==================== REPORT CRUD - CÓ PHÂN QUYỀN ====================
 
 // Hiển thị modal sửa Report
 function showEditReportModal(id) {
+    // KIỂM TRA QUYỀN: CHỈ ADMIN MỚI SỬA ĐƯỢC
+    if (currentUser.role !== "admin") {
+        showNotification("Chỉ Admin mới có quyền sửa Report!", "error");
+        return;
+    }
+
     const report = reportsData.find((r) => r.ID === id);
     if (!report) return;
 
@@ -339,6 +372,12 @@ function showEditReportModal(id) {
 
 // Hiển thị modal thêm Report
 function showAddReportModal() {
+    // KIỂM TRA QUYỀN: CHỈ ADMIN MỚI THÊM ĐƯỢC
+    if (currentUser.role !== "admin") {
+        showNotification("Chỉ Admin mới có quyền thêm Report!", "error");
+        return;
+    }
+
     const modal = document.getElementById("reportModal");
     document.getElementById("reportModalTitle").textContent = "Thêm Report Mới";
     document.getElementById("reportForm").reset();
@@ -364,6 +403,12 @@ function closeReportModal() {
 // Lưu Report
 async function saveReport(event) {
     event.preventDefault();
+
+    // KIỂM TRA QUYỀN
+    if (currentUser.role !== "admin") {
+        showNotification("Chỉ Admin mới có quyền thao tác Report!", "error");
+        return;
+    }
 
     const reportData = {
         ID: document.getElementById("reportId").value,
@@ -416,6 +461,12 @@ async function saveReport(event) {
 
 // Xóa Report
 async function deleteReport(id) {
+    // KIỂM TRA QUYỀN
+    if (currentUser.role !== "admin") {
+        showNotification("Chỉ Admin mới có quyền xóa Report!", "error");
+        return;
+    }
+
     const report = reportsData.find((r) => r.ID === id);
     if (!report) return;
 
@@ -471,10 +522,14 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
 
+    showLoading();
+
+    // ĐĂNG NHẬP ĐƠN GIẢN
     if ((email === "admin@gigan.vn" && password === "123@") || (email === "user@gigan.vn" && password === "123@")) {
         currentUser = {
             email: email,
             role: email === "admin@gigan.vn" ? "admin" : "user",
+            name: email === "admin@gigan.vn" ? "Administrator" : "Standard User",
         };
 
         // LƯU VÀO LOCALSTORAGE
@@ -482,11 +537,9 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
         document.getElementById("currentUserEmail").textContent = currentUser.email;
         document.getElementById("currentUserRole").textContent = currentUser.role.toUpperCase();
-
         document.getElementById("loginScreen").style.display = "none";
         document.getElementById("dashboardScreen").classList.add("active");
 
-        showLoading();
         try {
             await loadAllData();
             renderDashboard();
@@ -500,6 +553,9 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
         } finally {
             hideLoading();
         }
+    } else {
+        hideLoading();
+        showNotification("Email hoặc mật khẩu không đúng!", "error");
     }
 });
 
@@ -533,6 +589,7 @@ document.getElementById("logoutButton").addEventListener("click", () => {
 });
 
 function updateUserPermissions() {
+    // User Section
     if (currentUser.role === "user") {
         document.getElementById("usersTable").style.display = "none";
         document.getElementById("usersNoAccess").style.display = "block";
@@ -541,6 +598,16 @@ function updateUserPermissions() {
         document.getElementById("usersTable").style.display = "block";
         document.getElementById("usersNoAccess").style.display = "none";
         document.getElementById("addUserBtn").style.display = "inline-block";
+    }
+
+    // Report Section - CHỈ ADMIN MỚI THẤY NÚT THÊM
+    const addReportBtn = document.getElementById("addReportBtn");
+    if (addReportBtn) {
+        if (currentUser.role === "user") {
+            addReportBtn.style.display = "none";
+        } else {
+            addReportBtn.style.display = "inline-block";
+        }
     }
 }
 

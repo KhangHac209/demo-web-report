@@ -6,7 +6,7 @@ const CONFIG = {
 
     // Web App URL để GHI dữ liệu (Google Apps Script)
     WEB_APP_URL: "https://script.google.com/macros/s/AKfycbyKb9jEmLZoOaDUuw6oIw3lOnXaiB57A62YG7fq-7i5TWvJHNRMzBk_O1n50jxZ2N0/exec",
-    // Tên các sheet (BỎ STATS đi)
+
     // Tên các sheet
     SHEETS: {
         USERS: "Users",
